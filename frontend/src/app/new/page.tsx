@@ -10,6 +10,7 @@ import type { RouteResponse } from "@/lib/types";
 import { findPaths } from "@/services/api";
 import { SaveRouteDialog } from "@/components/save-route-dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { DebugInfo } from '@/components/debug-info';
 
 const CARGO_TYPES = [
   { value: "general", label: "General Merchandise" },
@@ -43,7 +44,7 @@ export default function Home() {
     restricted_flag: "avoid",
     description: "",
     cargo_type: "general",
-    weight: 0,
+    weight: 1,
   };
   
   const [formData, setFormData] = useState(defaultFormData);
@@ -164,6 +165,13 @@ export default function Home() {
       return;
     }
 
+    // Validate weight is greater than 0
+    if (formData.weight <= 0) {
+      setError("Weight must be greater than 0");
+      setLoading(false);
+      return;
+    }
+
     try {
       const data = await findPaths(formData);
       
@@ -264,15 +272,20 @@ export default function Home() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-sky-300">Weight (kg)</label>
+                    <label className="block text-sm font-medium text-sky-300">
+                      Weight (kg)
+                      <span className="text-xs text-slate-400 ml-1">
+                        (Affects pricing)
+                      </span>
+                    </label>
                     <input
                       type="number"
-                      min="0"
+                      min="1"
                       value={formData.weight}
                       onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all duration-200"
                       required
-                      placeholder="Enter weight"
+                      placeholder="Enter weight in kg"
                     />
                   </div>
                 </div>
@@ -479,7 +492,11 @@ export default function Home() {
                           </div>
                           <div>
                             <span className="text-slate-400">Cost: </span>
-                            <span className="text-white">${Math.round(edge.price)}</span>
+                            <span className="text-white">
+                              ${edge.price < 1000 
+                                ? edge.price.toFixed(2) 
+                                : (edge.price / 1000).toFixed(2) + 'k'}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -503,7 +520,9 @@ export default function Home() {
                       <div className="space-y-1">
                         <p className="text-slate-400">Total Cost</p>
                         <p className="text-2xl font-bold text-white">
-                          ${Math.round(routes.paths[selectedRoute].price_sum)}
+                          ${routes.paths[selectedRoute].price_sum < 1000 
+                            ? Math.round(routes.paths[selectedRoute].price_sum) 
+                            : (routes.paths[selectedRoute].price_sum / 1000).toFixed(2) + 'k'}
                         </p>
                       </div>
                     </div>
@@ -518,6 +537,9 @@ export default function Home() {
                     />
                   </div>
                 </div>
+
+                {/* Debug info for development */}
+                {process.env.NODE_ENV === 'development' && <DebugInfo routes={routes} />}
               </>
             ) : null}
           </div>

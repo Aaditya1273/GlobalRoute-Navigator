@@ -82,6 +82,8 @@ export const findPaths = async (data: any) => {
     // Convert 'avoid' to 'avoid' and 'allow' to 'ignore' for backend compatibility
     prohibited_flag: data.prohibited_flag === "allow" ? "ignore" : "avoid",
     restricted_flag: data.restricted_flag === "allow" ? "ignore" : data.restricted_flag,
+    // Ensure cargo_weight is passed (use weight field from form)
+    cargo_weight: data.weight || 1.0, // Default to 1.0 kg if not provided
   };
 
   console.log("Sending data to API:", formattedData);

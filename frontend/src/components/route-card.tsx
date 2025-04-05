@@ -75,7 +75,11 @@ export function RouteCard({ route, index }: RouteCardProps) {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Cost</p>
-                  <p className="font-medium text-sm sm:text-base">${route.price_sum.toFixed(2)}</p>
+                  <p className="font-medium text-sm sm:text-base">
+                    ${route.price_sum < 1000 
+                      ? route.price_sum.toFixed(2) 
+                      : (route.price_sum / 1000).toFixed(2) + 'k'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-yellow-500/30 transition-colors col-span-2 md:col-span-1">
@@ -120,7 +124,11 @@ export function RouteCard({ route, index }: RouteCardProps) {
                 <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
                 <h4 className="font-semibold text-sm sm:text-base">Total Cost</h4>
               </div>
-              <p className="text-xl sm:text-2xl font-bold">${route.price_sum.toFixed(2)}</p>
+              <p className="text-xl sm:text-2xl font-bold">
+                ${route.price_sum < 1000 
+                  ? route.price_sum.toFixed(2) 
+                  : (route.price_sum / 1000).toFixed(2) + 'k'}
+              </p>
             </div>
             <div className="p-3 sm:p-4 rounded-lg bg-white/5 border border-white/10 hover:border-yellow-500/30 transition-all duration-200 col-span-2 md:col-span-1">
               <div className="flex items-center space-x-2 text-yellow-500 mb-2">

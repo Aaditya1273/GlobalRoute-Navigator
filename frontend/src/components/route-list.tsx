@@ -99,7 +99,11 @@ export function RouteList({ routes, selectedRoute, onRouteSelect }: RouteListPro
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Cost</p>
-                    <p className="font-medium text-sm">${route.price_sum.toFixed(2)}</p>
+                    <p className="font-medium text-sm">
+                      ${route.price_sum < 1000 
+                        ? route.price_sum.toFixed(2) 
+                        : (route.price_sum / 1000).toFixed(2) + 'k'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
