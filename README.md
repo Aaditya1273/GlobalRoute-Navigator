@@ -1,58 +1,74 @@
-# 🌍 Multi-Modal Cross-Border Route Selector 🚛✈️🚢  
+# 🌐 SmartRoute Optimizer: AI-Powered Multi-Modal Logistics Solution  
+**Revolutionizing cross-border shipping** with intelligent route planning that balances speed, cost, and sustainability across air, sea, and land transport networks.  
 
-An **AI-powered logistics optimization tool** that determines the most efficient **cross-border shipping routes** using multiple transport modes (**air, sea, land, or hybrid combinations**). It optimizes key constraints like **cost, transit time, regulatory feasibility, and carbon footprint**.  
 
-Developed during **LogiThon 2025** Organized by **IIT Bombay** and **Softlink Global**, this project leverages AI and geospatial data to enhance decision-making in logistics and supply chain management.  
+---  
 
----
+## ✨ Key Innovations  
 
-## 🚀 Features  
-- ✅ **AI-powered Route Optimization** using **A star Algorithm** with dynamic heuristics  
-- ✅ **Multi-Modal Transport Support** (Air, Sea, Land & Hybrid combinations)  
-- ✅ **Optimized for Cost 💰, Time ⏳ & CO₂ Footprint 🌍**  
-- ✅ **Real-time Interactive Map** to visualize top **3-5 optimal routes** dynamically  
-- ✅ **AI-driven Insights** powered by **Google Gemini AI**  
-- ✅ **Custom API** integrating real-time logistics data sources  
+### 🧠 Intelligent Routing Engine  
+- Hybrid A* Algorithm with adaptive heuristics  
+- Multi-objective optimization (cost-time-emissions tradeoffs)  
+- Dynamic constraint handling for customs/regulations  
 
----
+### 🌍 Interactive Logistics Dashboard  
+- Comparative route visualization (3-5 optimal paths)  
+- Carbon footprint calculator  
+- Real-time transit condition monitoring  
 
-## ⚙️ Tech Stack  
-- **Frontend:** Next.js + TypeScript  
-- **Backend:** Python + FastAPI
-- **Database:** Prisma + PostgreSql 
-- **Algorithm:** A* Search with heuristics for cost, time, and CO₂ optimization  
-- **Data Sources:** Global logistics datasets & real-time APIs  
-- **AI Integration:** Google Gemini for intelligent suggestions  
-- **Mapping:** Leaflet.js & geospatial data processing  
+### 🤖 AI-Enhanced Decision Support  
+- Gemini AI for predictive delays analysis  
+- Alternative route suggestions during disruptions  
+- Automated documentation requirements  
 
----
+---  
 
-## 🛠️ Installation & Setup  
+## 🛠️ Technology Architecture  
 
-### **Frontend (Next.js + TypeScript)**  
-```bash
-cd frontend/routesyncai
-npm install
-npm run dev
+| Component          | Stack                          |
+|--------------------|-------------------------------|
+| **Frontend**       | Next.js 14 + ShadCN UI        |
+| **Backend**        | FastAPI + Python 3.11         |
+| **Data Pipeline**  | Apache Kafka + Spark          |
+| **Geospatial**     | Leaflet.js + PostGIS          |
+| **AI/ML**          | Gemini API + Scikit-learn     |
+
+---  
+
+## 🚀 Deployment Guide  
+
+### Web Interface  
+```bash 
+git clone https://github.com/team-smartroute/frontend
+cd frontend && pnpm install
+NEXT_PUBLIC_API_URL=http://localhost:8000 pnpm dev
 ```
-### **Backend (FastAPI + Python)**  
+
+### API Service  
 ```bash
-cd backend
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn smartroute.api:app --port 8000
 ```
----
-### **Output Screenshot**  
-![Screenshot 2025-03-12 183156](https://github.com/user-attachments/assets/9da3efdb-f3e1-413a-aafe-5dc531f3bba8)
-![Screenshot 2025-03-12 183230](https://github.com/user-attachments/assets/45b67bda-69a5-4aa5-9bd7-059daf2761fd)
-![Screenshot 2025-03-12 183343](https://github.com/user-attachments/assets/9e4248cf-2392-4d5e-802b-df28dc7be019)
 
+---  
 
----
+## 📊 Solution Impact  
 
+![Route Optimization Comparison](https://github.com/user-attachments/assets/9da3efdb-f3e1-413a-aafe-5dc531f3bba8)  
+*Fig 1. Cost-Time-Emissions tradeoff analysis*  
 
-### **👥 Contributors**
-- **Aditya Rathod**
-- **Joshua DMello**
-- **Joshua D’Sylva**
----
+![Live Tracking Interface](https://github.com/user-attachments/assets/45b67bda-69a5-4aa5-9bd7-059daf2761fd)  
+*Fig 2. Real-time multi-modal tracking*  
+
+---  
+
+## � Core Team  
+- **AADITYA RAWAT** 
+- **ARPIT SINGH** 
+- **JAY**   
+
+---  
+
+*"Redefining global supply chains through algorithmic efficiency and sustainable logistics"* 🌱
