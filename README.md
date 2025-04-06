@@ -1,4 +1,4 @@
-# 🌐 SmartRoute Optimizer: AI-Powered Multi-Modal Logistics Solution  
+# 🌐 GlobalRooute Navigator  
 **Revolutionizing cross-border shipping** with intelligent route planning that balances speed, cost, and sustainability across air, sea, and land transport networks.  
 
 
