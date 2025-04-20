@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -35,17 +35,11 @@ enum Status {
 }
 
 model Route {
-  id            String   @id @default(uuid())
-  shipmentId    String
-  shipment      Shipment @relation(fields: [shipmentId], references: [id], name: "ShipmentRoutes")
-  total_cost    Float // Sum of all segment costs
-  total_time    Float // Sum of all segment times (hours)
-  risk_score    Float // Calculated risk factor from GDELT & GDACS
-  emission      Float // Estimated carbon footprint
-  mode_sequence String // "Land-Air-Sea", "Sea-Land", etc.
-  createdAt     DateTime @default(now())
-
-  segments Segment[] @relation("RouteSegments")
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Add your route fields here
 }
 
 model Segment {

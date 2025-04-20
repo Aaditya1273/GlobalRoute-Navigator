@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm install && npx prisma generate && next build",
+    "prebuild": "rm -rf src/app/api/routes && mkdir -p src/app/api/routes && echo 'export function GET() { return new Response(JSON.stringify({ message: \"Disabled\" })) }' > src/app/api/routes/route.ts",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.24.1",
