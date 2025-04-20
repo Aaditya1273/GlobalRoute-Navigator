@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "rm -rf src/app/api/routes && mkdir -p src/app/api/routes && echo 'export function GET() { return new Response(JSON.stringify({ message: \"Disabled\" })) }' > src/app/api/routes/route.ts",
-    "build": "next build",
+    "build": "npx prisma format && npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate"

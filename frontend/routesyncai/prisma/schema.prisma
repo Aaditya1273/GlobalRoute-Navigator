@@ -80,15 +80,15 @@ enum RiskType {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role // ADMIN, LOGISTICS_PROVIDER, CLIENT
-  createdAt DateTime @default(now())
+  id          String        @id @default(cuid())
+  email       String        @unique
+  name        String?
+  savedRoutes SavedRoute[]  @relation("UserToSavedRoute")
+  password    String
+  role        Role // ADMIN, LOGISTICS_PROVIDER, CLIENT
+  createdAt   DateTime      @default(now())
 
   shipments   Shipment[]
-  savedRoutes SavedRoute[]
 }
 
 enum Role {
@@ -98,13 +98,13 @@ enum Role {
 }
 
 model SavedRoute {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   name        String
   description String?
-  userId      String   // This will store the Clerk user ID instead of a reference
-  start       String
-  goal        String
-  routeData   String   // Stores the complete route response as JSON string
+  startPoint  String
+  endPoint    String
   createdAt   DateTime @default(now())
+  user        User     @relation("UserToSavedRoute", fields: [userId], references: [id])
+  userId      String
   updatedAt   DateTime @updatedAt
 }

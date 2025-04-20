@@ -26,13 +26,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // This is needed to completely ignore the Prisma modules during build
-      config.externals.push('@prisma/client', 'prisma');
-    }
-    return config;
-  }
+  // Skip all Prisma operations
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
+  },
 }
 
 module.exports = nextConfig 
