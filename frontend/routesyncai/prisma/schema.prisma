@@ -39,7 +39,10 @@ model Route {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  // Add your route fields here
+  
+  // Add the missing relation fields
+  shipments Shipment[] @relation("ShipmentRoutes")
+  segments  Segment[]  @relation("RouteSegments")
 }
 
 model Segment {
