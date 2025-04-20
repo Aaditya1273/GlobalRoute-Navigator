@@ -39,13 +39,16 @@ model Route {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  // Add your route fields here
+  
+  // Add the missing relation fields
+  segments  Segment[] @relation("RouteSegments")
+  shipments Shipment[] @relation("ShipmentRoutes")
 }
 
 model Segment {
   id               String   @id @default(uuid())
   routeId          String
-  route            Route    @relation(fields: [routeId], references: [id], name: "RouteSegments")
+  route            Route    @relation("RouteSegments", fields: [routeId], references: [id])
   mode             Mode // LAND, AIR, SEA
   from_location    String // City/Port/Airport Code
   to_location      String // City/Port/Airport Code

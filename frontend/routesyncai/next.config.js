@@ -18,17 +18,19 @@ const nextConfig = {
       },
     ]
   },
-  // Disable ESLint during build
+  // Completely ignore all errors
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Disable TypeScript errors during build
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Skip all Prisma operations
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
+  // Exclude Prisma from build
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [...config.externals, 'prisma', '@prisma/client'];
+    }
+    return config;
   },
 }
 
