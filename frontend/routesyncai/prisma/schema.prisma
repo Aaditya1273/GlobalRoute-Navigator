@@ -39,16 +39,13 @@ model Route {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Add the missing relation fields
-  segments  Segment[] @relation("RouteSegments")
-  shipments Shipment[] @relation("ShipmentRoutes")
+  // Add your route fields here
 }
 
 model Segment {
   id               String   @id @default(uuid())
   routeId          String
-  route            Route    @relation("RouteSegments", fields: [routeId], references: [id])
+  route            Route    @relation(fields: [routeId], references: [id], name: "RouteSegments")
   mode             Mode // LAND, AIR, SEA
   from_location    String // City/Port/Airport Code
   to_location      String // City/Port/Airport Code
@@ -86,7 +83,7 @@ model User {
   id          String        @id @default(cuid())
   email       String        @unique
   name        String?
-  savedRoutes SavedRoute[]  @relation("UserToSavedRoute")
+  savedRoutes SavedRoute[]
   password    String
   role        Role // ADMIN, LOGISTICS_PROVIDER, CLIENT
   createdAt   DateTime      @default(now())
@@ -107,7 +104,7 @@ model SavedRoute {
   startPoint  String
   endPoint    String
   createdAt   DateTime @default(now())
-  user        User     @relation("UserToSavedRoute", fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
   userId      String
   updatedAt   DateTime @updatedAt
 }

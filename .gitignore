@@ -1,3 +1,23 @@
+# Next.js
+.next/
+out/
+build/
+.vercel/
+
+# Dependencies
+node_modules/
+
+# Cache
+.cache/
+*.db
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,8 +26,5 @@ backenv/
 .venv
 venv/
 ENV/
-.vercel
 *.pkl
 .DS_Store
-node_modules/
-.env.local
