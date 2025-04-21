@@ -24,13 +24,32 @@ import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { useAuth } from "@clerk/nextjs"
 import { useTheme } from "next-themes"
 import ShipmentTracker from "@/components/ShipmentMap"
 
+// Create a mock useAuth hook for when Clerk is not available
+const useClerkAuth = () => {
+  // Check if Clerk is available
+  if (typeof window !== 'undefined' && 
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
+      !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('dummy')) {
+    try {
+      // Try to import Clerk dynamically
+      const { useAuth } = require('@clerk/nextjs');
+      return useAuth();
+    } catch (e) {
+      console.error("Clerk is not available", e);
+    }
+  }
+  
+  // Return default values when Clerk is not available
+  return { isSignedIn: false, userId: null };
+};
+
 export default function Home() {
   const router = useRouter()
-  const { isSignedIn, userId } = useAuth()
+  // Use our custom hook that handles Clerk's absence
+  const { isSignedIn, userId } = useClerkAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { theme } = useTheme()

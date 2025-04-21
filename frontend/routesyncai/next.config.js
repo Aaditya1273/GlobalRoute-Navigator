@@ -32,6 +32,11 @@ const nextConfig = {
       config.externals = [...config.externals, 'prisma', '@prisma/client'];
     }
     return config;
+  },
+  // Skip Clerk auth during build
+  env: {
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_dummy',
+    CLERK_SECRET_KEY: 'sk_test_dummy',
   }
 }
 

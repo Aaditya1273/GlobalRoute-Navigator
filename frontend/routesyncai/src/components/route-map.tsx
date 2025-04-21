@@ -16,6 +16,7 @@ export function RouteMap({ route }: RouteMapProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [coordinates, setCoordinates] = useState<[number, number][]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [markers, setMarkers] = useState<maplibregl.Marker[]>([])
 
   // Geocode nodes using OpenStreetMap Nominatim API
   const geocodeNode = async (nodeName: string): Promise<[number, number] | null> => {
@@ -50,11 +51,12 @@ export function RouteMap({ route }: RouteMapProps) {
     if (route.coordinates && Array.isArray(route.coordinates)) {
       for (const point of route.coordinates) {
         if (point && typeof point === 'object' && 'latitude' in point && 'longitude' in point) {
-          coords.push([parseFloat(point.longitude), parseFloat(point.latitude)]);
+          coords.push([parseFloat(point.longitude.toString()), parseFloat(point.latitude.toString())]);
         }
       }
       
       if (coords.length > 0) {
+        console.log("Using provided coordinates:", coords);
         setCoordinates(coords);
         setIsLoading(false);
         return;
@@ -94,6 +96,7 @@ export function RouteMap({ route }: RouteMapProps) {
       console.error("Error in fetchCoordinates:", e);
     }
 
+    console.log("Final coordinates:", coords);
     setCoordinates(coords);
     setIsLoading(false);
   };
@@ -120,28 +123,54 @@ export function RouteMap({ route }: RouteMapProps) {
     }
   }, [])
 
+  // Cleanup function to remove markers
+  const cleanupMarkers = () => {
+    markers.forEach(marker => marker.remove());
+    setMarkers([]);
+  };
+
   // Fetch coordinates and draw route when the route changes
   useEffect(() => {
     if (!route.path) return
 
-    setIsLoading(true)
-    fetchCoordinates().then(() => {
-      if (coordinates.length > 0 && map.current) {
-        drawRouteOnMap()
-      }
-    })
-  }, [route]) // Add route as a dependency
+    cleanupMarkers();
+    setIsLoading(true);
+    fetchCoordinates();
+  }, [route]); // Add route as a dependency
+
+  // Draw route on map when coordinates change
+  useEffect(() => {
+    if (coordinates.length > 0 && map.current) {
+      drawRouteOnMap();
+    }
+  }, [coordinates]);
 
   // Draw the route on the map
   const drawRouteOnMap = () => {
-    if (!map.current || coordinates.length === 0) return
+    if (!map.current || coordinates.length === 0) return;
+
+    // Clean up existing markers
+    cleanupMarkers();
 
     // Remove existing route source and layer if they exist
     if (map.current.getSource('route')) {
-      map.current.removeLayer('route-line') // Remove the layer first
-      map.current.removeSource('route') // Then remove the source
+      map.current.removeLayer('route-line'); // Remove the layer first
+      map.current.removeSource('route'); // Then remove the source
     }
 
+    // Wait for the map style to be fully loaded
+    if (!map.current.isStyleLoaded()) {
+      map.current.once('style.load', () => {
+        addRouteToMap();
+      });
+    } else {
+      addRouteToMap();
+    }
+  };
+
+  const addRouteToMap = () => {
+    if (!map.current) return;
+    
     // Add a source and layer for the route line
     map.current.addSource('route', {
       type: 'geojson',
@@ -153,7 +182,7 @@ export function RouteMap({ route }: RouteMapProps) {
           coordinates: coordinates
         }
       }
-    })
+    });
 
     map.current.addLayer({
       id: 'route-line',
@@ -168,88 +197,90 @@ export function RouteMap({ route }: RouteMapProps) {
         'line-width': 4,
         'line-opacity': 0.8
       }
-    })
-
-    // Add markers for each node with icons based on mode
-    route.edges.forEach((edge, index) => {
-      const fromNode = edge.from;
-      const toNode = edge.to;
-      const mode = edge.mode;
-
-      // Create a custom marker element
-      const el = document.createElement('div');
-      el.className = 'marker';
-
-      // Set icon based on mode
-      let iconUrl = '';
-      switch (mode) {
-        case 'sea':
-          iconUrl = '/icons/ships.png'; // Path to ship icon
-          break;
-        case 'air':
-          iconUrl = '/icons/plane.png'; // Path to plane icon
-          break;
-        default:
-          iconUrl = '/icons/car.png'; // Path to car icon
-      }
-
-      el.style.backgroundImage = `url(${iconUrl})`;
-      el.style.width = '24px';
-      el.style.height = '24px';
-      el.style.backgroundSize = 'cover';
-
-      // Make sure coordinate exists and is in the correct format
-      if (index < coordinates.length) {
-        const fromCoord = coordinates[index];
-        // Create a new element clone for each marker
-        const fromEl = el.cloneNode(true) as HTMLDivElement;
-        
-        // Add marker for the "from" node with a popup
-        const fromMarker = new maplibregl.Marker(fromEl)
-          .setLngLat({ lng: fromCoord[0], lat: fromCoord[1] })
-          .setPopup(new maplibregl.Popup().setHTML(`<strong style="color: black;">${fromNode}</strong ><br><span style="color: black;">Mode: ${mode}</span>`))
-          .addTo(map.current!);
-      }
-
-      // Add marker for the "to" node (if it's the last edge)
-      if (index === route.edges.length - 1 && index + 1 < coordinates.length) {
-        const toCoord = coordinates[index + 1];
-        // Create a new element for the to marker
-        const toEl = el.cloneNode(true) as HTMLDivElement;
-        
-        const toMarker = new maplibregl.Marker(toEl)
-          .setLngLat({ lng: toCoord[0], lat: toCoord[1] })
-          .setPopup(new maplibregl.Popup().setHTML(`<strong style="color: black;">${toNode}</strong><br><span style="color: black;">Mode: ${mode}</span>`))
-          .addTo(map.current!);
-      }
     });
 
-    // Fit the map to the route
-    if (coordinates.length > 1) {
-      const bounds = new maplibregl.LngLatBounds(
-        { lng: coordinates[0][0], lat: coordinates[0][1] },
-        { lng: coordinates[0][0], lat: coordinates[0][1] }
+    // Add markers for start and end points
+    const newMarkers: maplibregl.Marker[] = [];
+
+    if (coordinates.length > 0) {
+      // Start marker
+      const startMarker = new maplibregl.Marker({ color: '#10b981' })
+        .setLngLat(coordinates[0])
+        .addTo(map.current);
+      newMarkers.push(startMarker);
+
+      // End marker
+      const endMarker = new maplibregl.Marker({ color: '#ef4444' })
+        .setLngLat(coordinates[coordinates.length - 1])
+        .addTo(map.current);
+      newMarkers.push(endMarker);
+    }
+
+    // Add intermediate point markers
+    if (route.edges && Array.isArray(route.edges)) {
+      route.edges.forEach((edge, index) => {
+        if (index > 0 && index < coordinates.length - 1) {
+          const mode = edge.mode;
+          
+          // Create a custom marker element
+          const el = document.createElement('div');
+          el.className = 'marker';
+          el.style.width = '24px';
+          el.style.height = '24px';
+          el.style.backgroundSize = 'cover';
+          
+          // Set icon based on mode
+          let iconUrl = '';
+          switch (mode) {
+            case 'sea':
+              iconUrl = '/icons/ship.png';
+              break;
+            case 'air':
+              iconUrl = '/icons/plane.png';
+              break;
+            default:
+              iconUrl = '/icons/truck.png';
+          }
+          
+          el.style.backgroundImage = `url(${iconUrl})`;
+          
+          const marker = new maplibregl.Marker(el)
+            .setLngLat(coordinates[index])
+            .addTo(map.current);
+          
+          newMarkers.push(marker);
+        }
+      });
+    }
+    
+    setMarkers(newMarkers);
+
+    // Fit map to the route
+    if (coordinates.length > 0) {
+      const bounds = coordinates.reduce(
+        (bounds, coord) => bounds.extend(coord as maplibregl.LngLatLike),
+        new maplibregl.LngLatBounds(coordinates[0], coordinates[0])
       );
       
-      coordinates.forEach(coord => {
-        bounds.extend({ lng: coord[0], lat: coord[1] });
-      });
-
       map.current.fitBounds(bounds, {
-        padding: 100,
+        padding: 50,
+        maxZoom: 10,
         duration: 1000
       });
     }
-  }
+  };
 
   return (
-    <div className={`relative rounded-lg overflow-hidden ${isFullscreen ? 'h-screen w-screen' : 'h-full w-full'}`}>
+    <div className="relative w-full h-[400px] rounded-lg overflow-hidden">
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
-          <div className="text-white text-lg">Loading map...</div>
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+            <p className="mt-2 text-sm text-muted-foreground">Loading map...</p>
+          </div>
         </div>
       )}
-      <div ref={mapContainer} className="h-full w-full" />
+      <div ref={mapContainer} className="w-full h-full" />
     </div>
   )
 }
