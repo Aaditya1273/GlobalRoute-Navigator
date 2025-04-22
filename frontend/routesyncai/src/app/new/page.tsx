@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertTriangle, Box, Navigation } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +26,8 @@ const TRANSPORT_MODES = [
   { value: "air", label: "Air" },
 ];
 
-export default function Home() {
+// Client component that uses useSearchParams
+function RouteForm() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   
@@ -524,5 +525,14 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="container mx-auto py-8 px-4 md:px-6">Loading route planner...</div>}>
+      <RouteForm />
+    </Suspense>
   );
 }
