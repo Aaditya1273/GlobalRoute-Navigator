@@ -49,7 +49,7 @@ import {
   Clock,
   MapPin,
 } from "lucide-react";
-import { useAuth, useClerk } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { SavedRoutes } from "@/components/saved-routes";
 
@@ -427,7 +427,27 @@ const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const router = useRouter();
-  const { signOut } = useClerk();
+  // Replace direct useClerk with a more compatible approach
+  const handleSignOut = async () => {
+    try {
+      // Use client-side only approach to sign out
+      if (typeof window !== 'undefined') {
+        // Clear auth tokens
+        localStorage.removeItem('clerk-db-jwt');
+        localStorage.removeItem('__clerk_client_jwt');
+        
+        // Redirect to home page
+        router.push('/');
+        
+        // Force reload to clear auth state
+        setTimeout(() => {
+          window.location.reload();
+        }, 300);
+      }
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   // Fetch route options when a shipment is selected
   useEffect(() => {
@@ -476,9 +496,7 @@ const Dashboard = () => {
   };
 
   const handleLogout = () => {
-    signOut(() => {
-      router.push('/');
-    });
+    handleSignOut();
   };
 
   const getStatusBadge = (status) => {

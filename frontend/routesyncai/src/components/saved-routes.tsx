@@ -515,7 +515,7 @@ export function SavedRoutes() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {routes.map((route) => {
+            {Array.isArray(routes) && routes.map((route) => {
               const routeData = route.routeData;
               const firstPath = Array.isArray(routeData.paths) ? routeData.paths[0] : null;
               const modes = getTransportModes(route);

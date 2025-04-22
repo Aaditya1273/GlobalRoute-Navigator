@@ -11,7 +11,7 @@ import {
   Ship,
   Shield,
   ArrowRight,
-  Navigation,
+  Navigation, 
   Map,
   Globe,
   BarChart3,
@@ -27,49 +27,105 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { useTheme } from "next-themes"
 import ShipmentTracker from "@/components/ShipmentMap"
 
-// Create a mock useAuth hook for when Clerk is not available
-const useClerkAuth = () => {
-  // Check if Clerk is available
-  if (typeof window !== 'undefined' && 
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
-      !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('dummy')) {
-    try {
-      // Try to import Clerk dynamically
-      const { useAuth } = require('@clerk/nextjs');
-      return useAuth();
-    } catch (e) {
-      console.error("Clerk is not available", e);
-    }
-  }
+// Create a simple auth context as a fallback when Clerk isn't available
+// ...existing code...
+function useClerkAuth() {
+  // Default state using useState hook
+  const [authData, setAuthData] = useState({ isSignedIn: false, userId: null });
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // ...existing code...
+    let authCheckComplete = false;
   
-  // Return default values when Clerk is not available
-  return { isSignedIn: false, userId: null };
-};
+    const checkAuthStatus = async () => {
+      try {
+        const clerk = await import('@clerk/nextjs');
+  
+        // Define getAuthState inside checkAuthStatus
+        const getAuthState = () => {
+          try {
+            const hasClerkToken =
+              localStorage.getItem('clerk-db-jwt') ||
+              localStorage.getItem('__clerk_client_jwt');
+            if (hasClerkToken) {
+              return { isSignedIn: true, userId: 'user-id' };
+            }
+            return { isSignedIn: false, userId: null };
+          } catch (e) {
+            console.error('Error checking auth state:', e);
+            return { isSignedIn: false, userId: null };
+          }
+        };
+  
+        if (!authCheckComplete) {
+          const currentAuthState = getAuthState();
+          setAuthData(currentAuthState);
+          setIsLoaded(true);
+          authCheckComplete = true;
+        }
+      } catch (e) {
+        console.error('Failed to load Clerk:', e);
+        setIsLoaded(true);
+      }
+    };
+  
+    checkAuthStatus();
+  
+    return () => {
+      authCheckComplete = true;
+    };
+  }, []);
+
+  return { ...authData, isLoaded }; // Return the authData state
+}
 
 export default function Home() {
-  const router = useRouter()
-  // Use our custom hook that handles Clerk's absence
-  const { isSignedIn, userId } = useClerkAuth()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const { theme } = useTheme()
+  const router = useRouter();
+  // Use our custom auth hook
+  const { isSignedIn, userId, isLoaded } = useClerkAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { theme } = useTheme();
 
   // Handle scroll for header transparency
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
+      setScrolled(window.scrollY > 50);
     }
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Function to handle auth button click
   const handleAuthClick = () => {
     if (isSignedIn) {
-      router.push("/Dashboard") 
+      router.push("/Dashboard");
     } else {
-      router.push("/sign-in")
+      router.push("/sign-in");
+    }
+  }
+  
+  // Function to handle logout
+  const handleLogout = async () => {
+    try {
+      // Use the useClerkAuth hook's signOut method
+      if (typeof window !== 'undefined') {
+        // Clear any local auth tokens
+        localStorage.removeItem('clerk-db-jwt');
+        localStorage.removeItem('__clerk_client_jwt');
+      }
+      
+      // Redirect to home page after logout
+      router.push('/');
+      
+      // Force a page reload to clear auth state
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   }
 
@@ -93,9 +149,16 @@ export default function Home() {
     },
   }
   
-  // Dynamic styles based on theme
-  const isDark = theme === 'dark'
+  // Dynamic styles based on theme - initialize as null to prevent hydration mismatch
+  const [mounted, setMounted] = useState(false);
+  const isDark = mounted && theme === 'dark';
+  
+  // Only set the mounted state after hydration is complete
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
+  // Rest of your component remains unchanged
   return (
     <main className={cn(
       "min-h-screen transition-colors duration-300",
@@ -158,19 +221,33 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-4">
-            {isSignedIn ? (
-              <Button
-                className={cn(
-                  "hidden md:flex text-white rounded-xl px-6 shadow-lg",
-                  isDark 
-                    ? "bg-sky-600 hover:bg-sky-700 shadow-sky-500/20" 
-                    : "bg-sky-600 hover:bg-sky-700 shadow-sky-600/20"
-                )}
-                onClick={handleAuthClick}
-              >
-                My Dashboard
-              </Button>
-            ) : (
+            {isLoaded && isSignedIn ? (
+              <div className="hidden md:flex items-center gap-2">
+                <Button
+                  className={cn(
+                    "hidden md:flex text-white rounded-xl px-6 shadow-lg",
+                    isDark 
+                      ? "bg-sky-600 hover:bg-sky-700 shadow-sky-500/20" 
+                      : "bg-sky-600 hover:bg-sky-700 shadow-sky-600/20"
+                  )}
+                  onClick={handleAuthClick}
+                >
+                  My Account
+                </Button>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "rounded-xl px-6",
+                    isDark 
+                      ? "border-red-500 text-red-400 hover:bg-red-500/10" 
+                      : "border-red-600 text-red-600 hover:bg-red-100"
+                  )}
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Button>
+              </div>
+            ) : isLoaded ? (
               <div className="hidden md:flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -196,7 +273,7 @@ export default function Home() {
                   Sign Up
                 </Button>
               </div>
-            )}
+            ) : null}
             {/* Mobile menu button */}
             <Button
               variant="ghost"
@@ -238,17 +315,31 @@ export default function Home() {
                   {item}
                 </Link>
               ))}
-              {isSignedIn ? (
-                <Button
-                  className={cn(
-                    "w-full text-white rounded-xl mt-4",
-                    isDark ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-600 hover:bg-sky-700"
-                  )}
-                  onClick={handleAuthClick}
-                >
-                  My Dashboard
-                </Button>
-              ) : (
+              {isLoaded && isSignedIn ? (
+                <div className="space-y-2 mt-4">
+                  <Button
+                    className={cn(
+                      "w-full text-white rounded-xl",
+                      isDark ? "bg-sky-600 hover:bg-sky-700" : "bg-sky-600 hover:bg-sky-700"
+                    )}
+                    onClick={handleAuthClick}
+                  >
+                    My Account
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full rounded-xl",
+                      isDark 
+                        ? "border-red-500 text-red-400 hover:bg-red-500/10" 
+                        : "border-red-600 text-red-600 hover:bg-red-100"
+                    )}
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </Button>
+                </div>
+              ) : isLoaded ? (
                 <div className="space-y-2 mt-4">
                   <Button
                     variant="outline"
@@ -272,7 +363,7 @@ export default function Home() {
                     Sign Up
                   </Button>
                 </div>
-              )}
+              ) : null}
               <div className={cn(
                 "pt-2 border-t",
                 isDark ? "border-sky-500/10" : "border-slate-200"
@@ -407,7 +498,12 @@ export default function Home() {
                   : "bg-white border-slate-200 hover:shadow-sky-500/10"
               )}
             >
-              <div className={isDark ? "text-sky-400" : "text-sky-600"} className="mb-4">{feature.icon}</div>
+              <div className={cn(
+                isDark ? "text-sky-400" : "text-sky-600",
+                "mb-4"
+              )}>
+                {feature.icon}
+              </div>
               <h3 className={cn(
                 "text-xl font-semibold mb-2",
                 isDark ? "text-white" : "text-slate-900"
@@ -415,24 +511,24 @@ export default function Home() {
               <p className={isDark ? "text-white/60" : "text-slate-600"}>{feature.description}</p>
               </motion.div>
             ))}
-          </motion.div>
+        </motion.div>
 
         {/* Map Visualization Preview */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={{
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{
             hidden: { opacity: 0, y: 40 },
-                visible: {
-                  opacity: 1,
+            visible: {
+              opacity: 1,
               y: 0,
               transition: { duration: 0.8, delay: 0.4 },
             },
           }}
           className="mt-20 relative"
         >
-          {isDark && (
+          {mounted && isDark && (
             <>
               <div className="absolute -top-10 -left-10 w-40 h-40 bg-sky-500/20 rounded-full blur-3xl"></div>
               <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl"></div>
@@ -445,7 +541,7 @@ export default function Home() {
               ? "bg-white/5 backdrop-blur-lg border-white/10" 
               : "bg-white border-slate-200"
           )}>
-                <Image
+            <Image
               src="https://c4.wallpaperflare.com/wallpaper/94/771/647/dusk-industrial-ship-cargo-wallpaper-preview.jpg"
               alt="Route Planning Interface"
               width={1200}
@@ -470,8 +566,8 @@ export default function Home() {
                   Try Route Planner
                 </Button>
               </div>
+            </div>
           </div>
-        </div>
         </motion.div>
       </section>
 
@@ -540,15 +636,15 @@ export default function Home() {
                   isDark ? "bg-sky-500/10 text-sky-400" : "bg-sky-100 text-sky-600"
                 )}>
                   {feature.icon}
-                        </div>
+                </div>
                 <h3 className={cn(
                   "text-xl font-bold mb-4",
                   isDark ? "text-white" : "text-slate-900"
                 )}>{feature.title}</h3>
                 <p className={isDark ? "text-white/60" : "text-slate-600"}>{feature.description}</p>
-                  </motion.div>
-              ))}
-            </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -560,7 +656,7 @@ export default function Home() {
           : "bg-white text-slate-600 border-slate-200"
       )}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
+          <div>
             <Link href="/" className={cn(
               "text-xl font-bold flex items-center gap-2 mb-4",
               isDark ? "text-white" : "text-slate-900"
@@ -569,16 +665,16 @@ export default function Home() {
                 "w-8 h-8 rounded-lg flex items-center justify-center",
                 isDark ? "bg-sky-500" : "bg-sky-600"
               )}>
-                  <Ship className="w-5 h-5 text-white" />
-                </div>
+                <Ship className="w-5 h-5 text-white" />
+              </div>
               <span>GlobalRoute</span>
-              </Link>
+            </Link>
             <p className="mb-4">
               Logistics solutions that optimize your supply chain, reduce costs, and improve efficiency.
             </p>
-              </div>
+          </div>
           
-            <div>
+          <div>
             <h3 className={cn(
               "font-bold mb-4",
               isDark ? "text-white" : "text-slate-900"
@@ -596,10 +692,10 @@ export default function Home() {
                 "transition-colors",
                 isDark ? "hover:text-sky-400" : "hover:text-sky-600"
               )}>Shipment Tracking</Link></li>
-              </ul>
-            </div>
+            </ul>
+          </div>
           
-            <div>
+          <div>
             <h3 className={cn(
               "font-bold mb-4",
               isDark ? "text-white" : "text-slate-900"
@@ -613,10 +709,10 @@ export default function Home() {
                 "transition-colors",
                 isDark ? "hover:text-sky-400" : "hover:text-sky-600"
               )}>Contact</Link></li>
-              </ul>
-            </div>
+            </ul>
+          </div>
           
-            <div>
+          <div>
             <h3 className={cn(
               "font-bold mb-4",
               isDark ? "text-white" : "text-slate-900"
@@ -631,8 +727,8 @@ export default function Home() {
                 isDark ? "hover:text-sky-400" : "hover:text-sky-600"
               )}>Privacy Policy</Link></li>
             </ul>
-                  </div>
-                </div>
+          </div>
+        </div>
         
         <div className={cn(
           "max-w-7xl mx-auto mt-12 pt-8 border-t text-center text-sm",
@@ -642,6 +738,5 @@ export default function Home() {
         </div>
       </footer>
     </main>
-  )
+  );
 }
-
