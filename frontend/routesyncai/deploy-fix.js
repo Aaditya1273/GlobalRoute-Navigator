@@ -1,5 +1,10 @@
 // Add this after your other fixes:
 
+// Import required modules
+const path = require('path');
+const fs = require('fs');
+const { execSync } = require('child_process');
+
 // Fix Prisma import error
 const mockPrismaPath = path.join(__dirname, 'src/lib/prisma.ts');
 const mockPrismaDir = path.dirname(mockPrismaPath);
