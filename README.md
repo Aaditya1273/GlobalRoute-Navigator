@@ -1,7 +1,12 @@
-# 🌍GlobalRoute NAvigator🚛✈️🚢  
+<div align="center">
+
+# 🌍 GlobalRoute Navigator 🚛✈️🚢
 
 An **AI-powered logistics optimization tool** that intelligently determines the most efficient **cross-border shipping routes** by leveraging multiple transport modes—air, sea, land, or hybrid combinations—while optimizing for critical constraints like **cost, transit time, regulatory feasibility, and carbon footprint**.
 
+<img width="1672" alt="global" src="https://github.com/user-attachments/assets/6e8c483d-33bf-41d7-bd5e-61add3cd8538" />
+
+</div>
 ---
 
 ## 🚀 Features  
