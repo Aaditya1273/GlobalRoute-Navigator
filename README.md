@@ -6,9 +6,9 @@
 
 **A\* search over a real multi-modal transport graph — air, sea, and land — that returns the top-N Pareto-efficient shipping routes ranked by cost, transit time, regulatory feasibility, and CO₂ footprint, with AI-driven prohibited/restricted-item screening.**
 
-[![Live App](https://img.shields.io/badge/Live%20App-global--route--navigator.vercel.app-000000?logo=vercel&logoColor=white&style=for-the-badge)](https://global-route-navigator.vercel.app/)
-[![Demo Video](https://img.shields.io/badge/Demo-Watch%20on%20YouTube-FF0000?logo=youtube&logoColor=white&style=for-the-badge)](https://youtu.be/nwLRME7-Wc8?si=xyM3Lw-y1a284dO8)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Aaditya1273%2FGlobalRoute--Navigator-181717?logo=github&style=for-the-badge)](https://github.com/Aaditya1273/GlobalRoute-Navigator)
+[![Live App](https://img.shields.io/badge/Live%20App-Click%20Now-000000?logo=vercel&logoColor=white&style=for-the-badge)](https://global-route-navigator.vercel.app/)
+[![Demo Video](https://img.shields.io/badge/Demo-YouTube-FF0000?logo=youtube&logoColor=white&style=for-the-badge)](https://youtu.be/nwLRME7-Wc8?si=xyM3Lw-y1a284dO8)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Click%20Now-181717?logo=github&style=for-the-badge)](https://github.com/Aaditya1273/GlobalRoute-Navigator)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js_15-000000?logo=next.js&logoColor=white&style=for-the-badge)](https://nextjs.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white&style=for-the-badge)](https://fastapi.tiangolo.com)
